@@ -1,2 +1,4 @@
 server:
   port: 8070
+replication-client:
+  delay: 1000
