@@ -9,13 +9,14 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>replication</artifactId>
+	<artifactId>replication-client</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>replication</name>
+	<name>replication-client</name>
 	<description>Homework for Data Engineering courses</description>
 
 	<properties>
 		<java.version>1.8</java.version>
+		<spring.boot.version>2.3.5.RELEASE</spring.boot.version>
 	</properties>
 
 	<dependencies>
@@ -52,6 +53,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring.boot.version}</version>
+				<configuration>
+					<executable>true</executable>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
