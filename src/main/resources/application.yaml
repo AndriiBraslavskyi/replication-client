@@ -1,4 +1,4 @@
 server:
-  port: ${port:8070}
+  port: 8070
 replication-client:
-  delay: ${delay:1000}
+  delay: 1000
