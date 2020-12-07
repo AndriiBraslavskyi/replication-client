@@ -17,12 +17,7 @@ EXPOSE 8070
 EXPOSE 8060
 EXPOSE 8050
 
-# Default values
-ARG CLIENT_PORT=8070
-ARG CLIENT_DELAY=1000
-
-# Values from docker compose file
-ENV CLIENT_PORT $CLIENT_PORT
-ENV CLIENT_DELAY $CLIENT_DELAY
+ARG CLIENT_PORT
+ARG CLIENT_DELAY
 
 CMD ["java", "-jar", "replication-client-0.0.1-SNAPSHOT.jar", "--server.port=${CLIENT_PORT}", "--replication-client.delay=${CLIENT_DELAY}"]
