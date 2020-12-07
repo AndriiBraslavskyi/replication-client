@@ -1,5 +1,6 @@
 package com.de.services;
 
+import com.de.exceptions.DuplicatedMessageException;
 import com.de.model.Message;
 import com.de.repositories.MessageRepository;
 import lombok.SneakyThrows;
@@ -28,7 +29,12 @@ public class MessageServiceImpl implements MessageService {
     public void addMessage(Message message) {
         logger.info("Message {} will be saved with delay {}", message, delay);
         delay(delay);
-        messageRepository.persistMessage(message);
+
+        try {
+            messageRepository.persistMessage(message);
+        } catch (DuplicatedMessageException exception) {
+            logger.info(exception.getMessage());
+        }
     }
 
     public List<String> getMessages() {
