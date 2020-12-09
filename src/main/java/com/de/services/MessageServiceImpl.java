@@ -1,17 +1,13 @@
 package com.de.services;
 
-import com.de.exceptions.DuplicatedMessageException;
 import com.de.model.Message;
 import com.de.repositories.MessageRepository;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MessageServiceImpl implements MessageService {
@@ -29,12 +25,7 @@ public class MessageServiceImpl implements MessageService {
     public void addMessage(Message message) {
         logger.info("Message {} will be saved with delay {}", message, delay);
         delay(delay);
-
-        try {
-            messageRepository.persistMessage(message);
-        } catch (DuplicatedMessageException exception) {
-            logger.info(exception.getMessage());
-        }
+        messageRepository.persistMessage(message);
     }
 
     public List<String> getMessages() {
