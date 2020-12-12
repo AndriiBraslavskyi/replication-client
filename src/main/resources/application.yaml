@@ -1,4 +1,5 @@
 server:
   port: 8070
+
 replication-client:
-  delay: 1000
+  persist-delay: 1000

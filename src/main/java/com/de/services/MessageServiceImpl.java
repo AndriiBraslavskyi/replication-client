@@ -6,13 +6,14 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MessageServiceImpl implements MessageService {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageServiceImpl.class);
+    private static final int RANDOM_DELAY_UPPER_BOUND = 15000;
 
     private final MessageRepository messageRepository;
     private final int delay;
@@ -23,19 +24,27 @@ public class MessageServiceImpl implements MessageService {
     }
 
     public void addMessage(Message message) {
-        logger.info("Message {} will be saved with delay {}", message, delay);
-        delay(delay);
+        if (message.getId() == null || message.getPayload() == null) {
+            throw new IllegalArgumentException("Validation for message {} failed. Missing required `id` or `payload`" +
+                    " field.");
+        }
+        final int resolvedDelay = resolveDelay(delay);
+        logger.info("Message {} will be saved with delay {}", message, resolvedDelay);
+        delay(resolvedDelay);
         messageRepository.persistMessage(message);
     }
 
-    public List<String> getMessages() {
-        return messageRepository.readAll().stream()
-                .map(Message::getPayload)
-                .collect(Collectors.toList());
+    @SneakyThrows
+    private void delay(int resolveDelay) {
+        Thread.sleep(resolveDelay);
+    }
+
+    public Collection<String> getMessages() {
+        return messageRepository.readAll();
     }
 
     @SneakyThrows
-    private static void delay(int delay) {
-        Thread.sleep(delay);
+    private static int resolveDelay(int delay) {
+        return delay < 0 ? ThreadLocalRandom.current().nextInt(RANDOM_DELAY_UPPER_BOUND) : delay;
     }
 }

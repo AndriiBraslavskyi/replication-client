@@ -17,7 +17,7 @@ public class WebConfiguration {
 
     @Bean
     MessageService messageService(MessageRepository messageRepository,
-                                  @Value("${replication-client.delay}") Integer delay) {
+                                  @Value("${replication-client.persist-delay}") Integer delay) {
         logger.info("Client started with delay = {}", delay);
         return new MessageServiceImpl(messageRepository, delay);
     }

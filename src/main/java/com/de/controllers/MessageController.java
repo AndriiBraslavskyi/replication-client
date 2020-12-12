@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
 
 @RestController
@@ -25,7 +25,7 @@ public class MessageController {
     }
 
     @GetMapping("/messages")
-    public List<String> getMessages() {
+    public Collection<String> getMessages() {
         return messageService.getMessages();
     }
 }
