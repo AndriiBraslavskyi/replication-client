@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MessageServiceImpl implements MessageService {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageServiceImpl.class);
-    private static final int RANDOM_DELAY_UPPER_BOUND = 15000;
+    private static final int RANDOM_DELAY_UPPER_BOUND = 10000;
 
     private final MessageRepository messageRepository;
     private final int delay;
