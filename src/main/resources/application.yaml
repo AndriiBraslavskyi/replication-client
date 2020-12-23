@@ -3,3 +3,10 @@ server:
 
 replication-client:
   persist-delay: 1000
+  save-on-cancel: true
+
+logging:
+  level:
+    org:
+      springframework:
+        web: INFO

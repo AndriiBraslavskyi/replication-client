@@ -1,13 +1,13 @@
 package com.de.services;
 
 import com.de.model.Message;
+import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface MessageService {
 
-    void addMessage(Message message);
+    Mono<Message> addMessage(Message message);
 
-    Collection<String> getMessages();
+    Mono<Collection<Message>> getMessages();
 }
