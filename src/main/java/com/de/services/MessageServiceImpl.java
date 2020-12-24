@@ -27,20 +27,20 @@ public class MessageServiceImpl implements MessageService {
         this.saveOnCancel = saveOnCancel;
     }
 
-    public Mono<Message> addMessage(Message message) {
+    public Mono<Void> addMessage(Message message) {
         final int resolvedDelay = resolveDelay(delay);
         return Mono.just(message)
                 .map(this::validateMessage)
                 .doOnNext(unused -> logger.info("Message will be saved with delay {}", resolvedDelay))
                 .delayElement(Duration.ofMillis(resolvedDelay))
-                .map(this::saveMessage)
+                .flatMap(this::saveMessage)
                 .doOnCancel(() -> onSubscriptionCanceled(message));
     }
 
-    private Message saveMessage(Message message) {
-        messageRepository.persistMessage(message);
+    private Mono<Void> saveMessage(Message message) {
         logger.info("Message = {} was saved", message);
-        return message;
+        messageRepository.persistMessage(message);
+        return Mono.empty();
     }
 
     private void onSubscriptionCanceled(Message message) {
