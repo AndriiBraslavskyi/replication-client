@@ -7,22 +7,39 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class InMemoryMessageRepository implements MessageRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(InMemoryMessageRepository.class);
-    private final Map<Long, Message> messages;
+    private final NavigableMap<Long, Message> savedMessages;
+    private final NavigableMap<Long, Message> waitingForSaveMessages;
+    private final Lock saveLock = new ReentrantLock();
 
     public InMemoryMessageRepository() {
-        this.messages = new ConcurrentSkipListMap<>();
+        this.savedMessages = new ConcurrentSkipListMap<>();
+        this.waitingForSaveMessages = new ConcurrentSkipListMap<>();
     }
 
     @Override
     public void persistMessage(Message message) {
-        if (!messages.containsKey(message.getId())) {
-            messages.put(message.getId(), message);
+        if (!savedMessages.containsKey(message.getId())) {
+            final Long lastSavedId = getLastKey(savedMessages);
+            final long currentMessageId = message.getId();
+
+            if (lastSavedId == null) {
+                saveMessage(message);
+                return;
+            }
+
+            if (lastSavedId == message.getId() - 1) {
+                saveCurrentAndAwaitingMessages(message);
+            } else {
+                doubleCheckAndSaveToAwaitingIfNotReady(message, currentMessageId);
+            }
         } else {
             final String errorMessage = String.format("Failed to save message: %s with id: %s with a"
                     + " reason: Message is already saved, duplicated message", message.getPayload(), message.getId());
@@ -31,8 +48,55 @@ public class InMemoryMessageRepository implements MessageRepository {
         }
     }
 
+    private void doubleCheckAndSaveToAwaitingIfNotReady(Message message, long currentMessageId) {
+        saveLock.lock();
+        try {
+            final Long lastSavedIdDoubleChecked = getLastKey(savedMessages);
+            if (lastSavedIdDoubleChecked == null || lastSavedIdDoubleChecked == message.getId() - 1) {
+                saveCurrentAndAwaitingMessages(message);
+            } else {
+                waitingForSaveMessages.put(currentMessageId, message);
+            }
+        } finally {
+            saveLock.unlock();
+        }
+    }
+
+    private <T, V> T getLastKey(NavigableMap<T, V> navigableMap) {
+        return navigableMap.isEmpty() ? null : navigableMap.lastKey();
+    }
+
+    private void saveCurrentAndAwaitingMessages(Message message) {
+        saveLock.lock();
+        try {
+            savedMessages.put(message.getId(), message);
+            tryToSaveReadyToSaveMessages(message.getId());
+        } finally {
+            saveLock.unlock();
+        }
+    }
+
+    private void saveMessage(Message message) {
+        saveLock.lock();
+        try {
+            savedMessages.put(message.getId(), message);
+        } finally {
+            saveLock.unlock();
+        }
+    }
+
+    private void tryToSaveReadyToSaveMessages(long currentMessageId) {
+        long nextMessageToSaveId = currentMessageId + 1;
+        Message nextMessageToSave = waitingForSaveMessages.get(nextMessageToSaveId);
+        while (nextMessageToSave != null) {
+            savedMessages.put(nextMessageToSaveId, nextMessageToSave);
+            nextMessageToSaveId += 1;
+            nextMessageToSave = waitingForSaveMessages.get(nextMessageToSaveId);
+        }
+    }
+
     @Override
     public Mono<Collection<Message>> readAll() {
-        return Mono.just(messages.values());
+        return Mono.just(savedMessages.values());
     }
 }

@@ -2,8 +2,8 @@ server:
   port: 8070
 
 replication-client:
-  persist-delay: 1000
-  save-on-cancel: true
+  persist-delay: -1
+  save-on-cancel: false
 
 logging:
   level:
