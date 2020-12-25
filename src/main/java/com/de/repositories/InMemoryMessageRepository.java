@@ -29,13 +29,7 @@ public class InMemoryMessageRepository implements MessageRepository {
         if (!savedMessages.containsKey(message.getId())) {
             final Long lastSavedId = getLastKey(savedMessages);
             final long currentMessageId = message.getId();
-
-            if (lastSavedId == null) {
-                saveMessage(message);
-                return;
-            }
-
-            if (lastSavedId == message.getId() - 1) {
+            if (isFirstMessage(message, lastSavedId) || isNextInOrderMessage(message, lastSavedId)) {
                 saveCurrentAndAwaitingMessages(message);
             } else {
                 doubleCheckAndSaveToAwaitingIfNotReady(message, currentMessageId);
@@ -48,11 +42,19 @@ public class InMemoryMessageRepository implements MessageRepository {
         }
     }
 
+    private boolean isNextInOrderMessage(Message message, Long lastSavedId) {
+        return lastSavedId != null && lastSavedId == message.getId() - 1;
+    }
+
+    private boolean isFirstMessage(Message message, Long lastSavedId) {
+        return lastSavedId == null && message.getId() == 1;
+    }
+
     private void doubleCheckAndSaveToAwaitingIfNotReady(Message message, long currentMessageId) {
         saveLock.lock();
         try {
             final Long lastSavedIdDoubleChecked = getLastKey(savedMessages);
-            if (lastSavedIdDoubleChecked == null || lastSavedIdDoubleChecked == message.getId() - 1) {
+            if (lastSavedIdDoubleChecked != null && lastSavedIdDoubleChecked == message.getId() - 1) {
                 saveCurrentAndAwaitingMessages(message);
             } else {
                 waitingForSaveMessages.put(currentMessageId, message);
@@ -71,15 +73,6 @@ public class InMemoryMessageRepository implements MessageRepository {
         try {
             savedMessages.put(message.getId(), message);
             tryToSaveReadyToSaveMessages(message.getId());
-        } finally {
-            saveLock.unlock();
-        }
-    }
-
-    private void saveMessage(Message message) {
-        saveLock.lock();
-        try {
-            savedMessages.put(message.getId(), message);
         } finally {
             saveLock.unlock();
         }
