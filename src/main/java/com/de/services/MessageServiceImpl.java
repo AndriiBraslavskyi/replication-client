@@ -31,7 +31,7 @@ public class MessageServiceImpl implements MessageService {
         final int resolvedDelay = resolveDelay(delay);
         return Mono.just(message)
                 .map(this::validateMessage)
-                .doOnNext(unused -> logger.info("Message will be saved with delay {}", resolvedDelay))
+                .doOnNext(unused -> logger.info("Message {} will be saved with delay {}", message, resolvedDelay))
                 .delayElement(Duration.ofMillis(resolvedDelay))
                 .flatMap(this::saveMessage)
                 .doOnCancel(() -> onSubscriptionCanceled(message));
@@ -48,7 +48,7 @@ public class MessageServiceImpl implements MessageService {
             logger.info("Message {} saved after client disconnected by timeout", message);
             messageRepository.persistMessage(message);
         } else {
-            logger.info("Message was not saved after client disconnected by timeout");
+            logger.info("Message {} was not saved after client disconnected by timeout", message);
         }
     }
 
