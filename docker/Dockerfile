@@ -20,4 +20,4 @@ EXPOSE 8050
 ARG CLIENT_PORT
 ARG CLIENT_DELAY
 
-CMD ["java", "-jar", "replication-client-0.0.1-SNAPSHOT.jar", "--server.port=${CLIENT_PORT}", "--replication-client.persist-delay=${CLIENT_DELAY}", "--replication-client.save-on-cancel=${SAVE_ON_CANCEL}"]
+CMD ["java", "-jar", "replication-client-0.0.1-SNAPSHOT.jar", "--server.port=${CLIENT_PORT}", "--replication-client.persist-delay=${CLIENT_DELAY}", "--replication-client.save-on-cancel=${SAVE_ON_CANCEL}", "--replication-client.max-random-timeout=${MAX_RANDOM_TIMEOUT}"]

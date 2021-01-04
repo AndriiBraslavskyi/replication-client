@@ -20,11 +20,16 @@ public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
     private final int delay;
     private final boolean saveOnCancel;
+    private final int maxRandomTimeout;
 
-    public MessageServiceImpl(MessageRepository messageRepository, Integer delay, boolean saveOnCancel) {
+    public MessageServiceImpl(MessageRepository messageRepository,
+                              Integer delay,
+                              boolean saveOnCancel,
+                              Integer maxRandomTimeout) {
         this.messageRepository = Objects.requireNonNull(messageRepository);
         this.delay = Objects.requireNonNull(delay);
         this.saveOnCancel = saveOnCancel;
+        this.maxRandomTimeout = Objects.requireNonNull(maxRandomTimeout);
     }
 
     public Mono<Void> addMessage(Message message) {
