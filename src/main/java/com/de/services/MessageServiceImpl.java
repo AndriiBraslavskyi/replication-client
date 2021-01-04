@@ -15,8 +15,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MessageServiceImpl implements MessageService {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageServiceImpl.class);
-    private static final int RANDOM_DELAY_UPPER_BOUND = 10000;
-
     private final MessageRepository messageRepository;
     private final int delay;
     private final boolean saveOnCancel;
@@ -70,7 +68,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @SneakyThrows
-    private static int resolveDelay(int delay) {
-        return delay < 0 ? ThreadLocalRandom.current().nextInt(RANDOM_DELAY_UPPER_BOUND) : delay;
+    private  int resolveDelay(int delay) {
+        return delay < 0 ? ThreadLocalRandom.current().nextInt(maxRandomTimeout) : delay;
     }
 }
